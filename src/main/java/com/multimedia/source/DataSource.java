@@ -10,6 +10,16 @@ public interface DataSource extends Source {
     void open(URI uri) throws IOException;
 
     /**
+     * get source's size
+     */
+    long getSize();
+
+    /**
+     * seek to target position
+     */
+    void seek(long position) throws IOException;
+
+    /**
      * close source
      */
     void close() throws IOException;
