@@ -62,6 +62,10 @@ public class MimeType {
     public static final String APPLICATION_M3U8_NEW = appendApplication("vnd.apple.mpegurl");
     public static final String APPLICATION_MPD = appendApplication("dash+xml");
 
+    private MimeType() {
+        //nothing
+    }
+
     private static String appendVideo(String suffix) {
         return TYPE_VIDEO + "/" + suffix;
     }
