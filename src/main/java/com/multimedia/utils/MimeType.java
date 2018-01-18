@@ -32,6 +32,7 @@ public class MimeType {
     public static final String AUDIO_AMR_NB = appendAudio("3gpp");
     public static final String AUDIO_AMR_WB = appendAudio("amr-wb");
     public static final String AUDIO_FLAC = appendAudio("flac");
+    public static final String AUDIO_RAW = appendVideo("L16");
 
     /**
      * subtitle text
@@ -52,6 +53,7 @@ public class MimeType {
     public static final String VIDEO_MPEG = appendVideo("mpeg");
     public static final String VIDEO_MPEG2TS = appendVideo("mp2t");
     public static final String VIDEO_FLV = appendVideo("x-flv");
+    public static final String AUDIO_WAV = appendAudio("x-wav");
 
     /**
      * live streaming
@@ -89,7 +91,8 @@ public class MimeType {
                 || mimeType.equals(AUDIO_OPUS)
                 || mimeType.equals(AUDIO_AMR_NB)
                 || mimeType.equals(AUDIO_AMR_WB)
-                || mimeType.equals(AUDIO_FLAC)) {
+                || mimeType.equals(AUDIO_FLAC)
+                || mimeType.equals(AUDIO_RAW)) {
             return true;
         }
         else {
