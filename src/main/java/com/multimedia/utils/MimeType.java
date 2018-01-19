@@ -1,6 +1,6 @@
 package com.multimedia.utils;
 
-public class MimeType {
+public final class MimeType {
     private static final String TYPE_VIDEO = "video";
     private static final String TYPE_AUDIO = "audio";
     private static final String TYPE_TEXT = "text";
