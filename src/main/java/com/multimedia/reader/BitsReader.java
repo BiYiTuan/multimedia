@@ -34,7 +34,7 @@ public final class BitsReader {
     }
 
     /**
-     * get the number of bits yet can be read
+     * the number of bits can be read
      */
     public int available() {
         if (mOffset < mLimit) {
@@ -84,7 +84,7 @@ public final class BitsReader {
     }
 
     /**
-     * read up to 63 bits (there is no unsigned type in java)
+     * read up to 63 bits directly
      */
     public long readBits(int numBits) {
         if (numBits < 0 || numBits > available() || numBits > 63) {
