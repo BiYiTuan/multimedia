@@ -3,20 +3,20 @@ package com.multimedia.reader;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 
-public final class BytesReader {
+public final class ByteStreamReader {
     private byte[] mBuffer;
     private int mOffset;
     private int mLimit;
 
-    public BytesReader(byte[] buffer) {
+    public ByteStreamReader(byte[] buffer) {
         this(buffer, 0);
     }
 
-    public BytesReader(byte[] buffer, int offset) {
+    public ByteStreamReader(byte[] buffer, int offset) {
         this(buffer, offset, buffer.length - offset);
     }
 
-    public BytesReader(byte[] buffer, int offset, int length) {
+    public ByteStreamReader(byte[] buffer, int offset, int length) {
         if (offset < 0 || offset >= buffer.length) {
             throw new IllegalArgumentException("invalid buffer offset");
         }
@@ -54,30 +54,22 @@ public final class BytesReader {
     }
 
     /**
-     * read one byte as unsigned value
+     * read unsigned int8
      */
-    public int readUnsignedByte() {
+    public int readUnsignedInt8() {
         return (mBuffer[mOffset++] & 0xff);
     }
 
     /**
-     * read two bytes as unsigned value
+     * read unsigned int16 in big endian
      */
-    public int readUnsignedShort() {
+    public int readUnsignedInt16() {
         return (mBuffer[mOffset++] & 0xff) << 8
                 | (mBuffer[mOffset++] & 0xff);
     }
 
     /**
-     * read two bytes as unsigned value in little endian
-     */
-    public int readUnsignedShortInLittleEndian() {
-        return (mBuffer[mOffset++] & 0xff)
-                | (mBuffer[mOffset++] & 0xff) << 8;
-    }
-
-    /**
-     * read three bytes as unsigned value
+     * read unsigned int24 in big endian
      */
     public int readUnsignedInt24() {
         return (mBuffer[mOffset++] & 0xff) << 16
@@ -86,9 +78,9 @@ public final class BytesReader {
     }
 
     /**
-     * read four bytes as unsigned value.
+     * read unsigned int32 in big endian
      */
-    public long readUnsignedInt() {
+    public long readUnsignedInt32() {
         return (mBuffer[mOffset++] & 0xffL) << 24
                 | (mBuffer[mOffset++] & 0xffL) << 16
                 | (mBuffer[mOffset++] & 0xffL) << 8
@@ -96,9 +88,17 @@ public final class BytesReader {
     }
 
     /**
-     * read four bytes as unsigned value in little endian.
+     * read unsigned int16 in little endian
      */
-    public long readUnsignedIntInLittleEndian() {
+    public int readUnsignedInt16InLittleEndian() {
+        return (mBuffer[mOffset++] & 0xff)
+                | (mBuffer[mOffset++] & 0xff) << 8;
+    }
+
+    /**
+     * read unsigned int32 in little endian.
+     */
+    public long readUnsignedInt32InLittleEndian() {
         return (mBuffer[mOffset++] & 0xffL)
                 | (mBuffer[mOffset++] & 0xffL) << 8
                 | (mBuffer[mOffset++] & 0xffL) << 16
@@ -106,7 +106,7 @@ public final class BytesReader {
     }
 
     /**
-     * read four bytes as float value
+     * read float
      */
     public float readFloat() {
         int value = (mBuffer[mOffset++] & 0xff) << 24
@@ -118,7 +118,7 @@ public final class BytesReader {
     }
 
     /**
-     * read eight bytes as double value
+     * read double
      */
     public double readDouble() {
         long value = (mBuffer[mOffset++] & 0xffL) << 56
@@ -134,7 +134,7 @@ public final class BytesReader {
     }
 
     /**
-     * read bytes as UTF-8 string
+     * read UTF-8 string
      */
     public String readUTF8String(int length) {
         String value = new String(mBuffer, mOffset, length, Charset.forName("UTF-8"));
@@ -145,16 +145,20 @@ public final class BytesReader {
     }
 
     /**
-     * read bytes as bits stream
+     * read bit stream
      */
-    public BitsReader readBits(int length) {
-        return new BitsReader(mBuffer, mOffset, length);
+    public BitStreamReader readBits(int length) {
+        BitStreamReader reader = new BitStreamReader(mBuffer, mOffset, length);
+
+        mOffset += length;
+
+        return reader;
     }
 
     /**
-     * read bytes as data
+     * read bytes
      */
-    public byte[] readData(int length) {
+    public byte[] readBytes(int length) {
         byte[] value = Arrays.copyOfRange(mBuffer, mOffset, length);
 
         mOffset += length;

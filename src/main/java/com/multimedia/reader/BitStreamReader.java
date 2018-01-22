@@ -1,6 +1,6 @@
 package com.multimedia.reader;
 
-public final class BitsReader {
+public final class BitStreamReader {
     private static final int BITS_PER_BYTE = 8;
 
     private byte[] mBuffer;
@@ -9,15 +9,15 @@ public final class BitsReader {
 
     private int mAvailableBitsInByte;
 
-    public BitsReader(byte[] buffer) {
+    public BitStreamReader(byte[] buffer) {
         this(buffer, 0);
     }
 
-    public BitsReader(byte[] buffer, int offset) {
+    public BitStreamReader(byte[] buffer, int offset) {
         this(buffer, offset, buffer.length - offset);
     }
 
-    public BitsReader(byte[] buffer, int offset, int length) {
+    public BitStreamReader(byte[] buffer, int offset, int length) {
         if (offset < 0 || offset >= buffer.length) {
             throw new IllegalArgumentException("invalid buffer offset");
         }
