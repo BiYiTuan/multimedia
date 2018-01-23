@@ -27,6 +27,7 @@ public final class MetaData {
     public static final String KEY_LEVEL = "level";
     public static final String KEY_BITRATE = "bitrate";
     public static final String KEY_I_FRAME_INTERVAL = "I_frame_interval";
+    public static final String KEY_QUALITY = "quality";
 
     /**
      * id3
@@ -43,6 +44,7 @@ public final class MetaData {
     public static final String KEY_DATE = "date";
     public static final String KEY_WRITER = "writer";
     public static final String KEY_DURATION = "duration";
+    public static final String KEY_RATING = "rating";
     public static final String KEY_LANGUAGE = "language";
     public static final String KEY_COPYRIGHT = "copyright";
 
