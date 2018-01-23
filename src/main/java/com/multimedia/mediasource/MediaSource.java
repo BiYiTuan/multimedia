@@ -1,8 +1,14 @@
 package com.multimedia.mediasource;
 
 import com.multimedia.metadata.MetaData;
+import com.multimedia.source.DataSource;
 
 public interface MediaSource {
+    /**
+     * set data source
+     */
+    void setDataSource(DataSource source);
+
     /**
      * listener for source prepare.
      */
