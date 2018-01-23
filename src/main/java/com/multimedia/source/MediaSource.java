@@ -1,7 +1,6 @@
-package com.multimedia.mediasource;
+package com.multimedia.source;
 
 import com.multimedia.metadata.MetaData;
-import com.multimedia.source.DataSource;
 
 public interface MediaSource {
     /**
