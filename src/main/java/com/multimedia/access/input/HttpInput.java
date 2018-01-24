@@ -9,7 +9,7 @@ import java.net.URI;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-public final class SimpleHttpClient implements DataInput {
+public final class HttpInput implements DataInput {
     private static OkHttpClient sClient = null;
 
     private static Call.Factory getCallFactory() {
@@ -31,11 +31,11 @@ public final class SimpleHttpClient implements DataInput {
 
     private InputStream mContentStream = null;
 
-    public SimpleHttpClient(URI uri) {
+    public HttpInput(URI uri) {
         this(uri, null);
     }
 
-    public SimpleHttpClient(URI uri, Map<String, String> properties) {
+    public HttpInput(URI uri, Map<String, String> properties) {
         mUrl = HttpUrl.get(uri);
 
         if (properties != null) {
