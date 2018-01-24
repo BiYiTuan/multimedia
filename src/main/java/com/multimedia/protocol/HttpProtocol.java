@@ -1,32 +1,35 @@
-package com.multimedia.source;
+package com.multimedia.protocol;
 
 import okhttp3.*;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
+import java.net.URL;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-public class HttpDataSource implements DataSource {
+public final class HttpProtocol implements Protocol {
     private static OkHttpClient sClient = null;
 
     private Map<String, String> mDefaultRequestHeaders;
     private HttpUrl mUrl;
 
-    private long mContentLength = -1;
-    private InputStream mContentStream = null;
+    private boolean mIsSupportRangeRequests = false;
 
-    public HttpDataSource() {
+    private long mContentLength;
+    private InputStream mContentStream;
+
+    public HttpProtocol() {
         this(null);
     }
 
-    public HttpDataSource(Map<String, String> defaultRequestHeaders) {
+    public HttpProtocol(Map<String, String> defaultRequestHeaders) {
         mDefaultRequestHeaders = defaultRequestHeaders;
     }
 
-    public void open(URI uri) throws IOException {
-        mUrl = HttpUrl.get(uri);
+    @Override
+    public void open(URL url) throws IOException {
+        mUrl = HttpUrl.get(url);
         Request request = createRequest(0);
 
         Response response = getCallFactory().newCall(request).execute();
@@ -34,37 +37,16 @@ public class HttpDataSource implements DataSource {
             throw new IOException("connect fail, code is " + response.code());
         }
 
+        String value = response.header("Accept-Ranges", "none");
+        if (value.equals("bytes")) {
+            mIsSupportRangeRequests = true;
+        }
+
         mContentLength = response.body().contentLength();
         mContentStream = response.body().byteStream();
     }
 
-    public long getSize() {
-        return mContentLength;
-    }
-
-    public void seek(long position) throws IOException {
-        if (mContentLength == -1) {
-            throw new IllegalStateException("can not seek");
-        }
-
-        if (position < 0 || position >= mContentLength) {
-            throw new IllegalArgumentException("invalid file position");
-        }
-
-        Request request = createRequest(position);
-
-        Response response = getCallFactory().newCall(request).execute();
-        if (!response.isSuccessful()) {
-            throw new IOException("connect fail, code is " + response.code());
-        }
-
-        mContentStream = response.body().byteStream();
-    }
-
-    public void close() throws IOException {
-        mContentStream.close();
-    }
-
+    @Override
     public int read(byte[] buffer, int offset, int length) throws IOException {
         if (offset < 0 || offset >= buffer.length) {
             throw new IllegalArgumentException("invalid buffer offset");
@@ -79,6 +61,40 @@ public class HttpDataSource implements DataSource {
         }
         else {
             return mContentStream.read(buffer, offset, length);
+        }
+    }
+
+    @Override
+    public void write(byte[] buffer, int offset, int length) throws IOException {
+        throw new IllegalStateException("not support");
+    }
+
+    @Override
+    public void seek(long position) throws IOException {
+        if (!mIsSupportRangeRequests) {
+            throw new IllegalStateException("not support range requests");
+        }
+
+        if (position < 0 || position >= mContentLength) {
+            throw new IllegalArgumentException("invalid file position");
+        }
+
+        mContentStream.close();
+
+        Request request = createRequest(position);
+
+        Response response = getCallFactory().newCall(request).execute();
+        if (!response.isSuccessful()) {
+            throw new IOException("connect fail, code is " + response.code());
+        }
+
+        mContentStream = response.body().byteStream();
+    }
+
+    @Override
+    public void close() throws IOException {
+        if (mContentStream != null) {
+            mContentStream.close();
         }
     }
 
