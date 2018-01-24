@@ -29,12 +29,7 @@ public final class SimpleHttpClient implements DataInput {
     private HttpUrl mUrl;
     private Headers mRequestHeaders;
 
-    private boolean mIsSupportRangeRequests = false;
-
-    private long mContentLength;
-    private long mReadPosition;
-
-    private InputStream mContentStream;
+    private InputStream mContentStream = null;
 
     public SimpleHttpClient(URI uri) {
         this(uri, null);
@@ -55,32 +50,26 @@ public final class SimpleHttpClient implements DataInput {
     }
 
     @Override
-    public void open() throws IOException {
-        Request request = createRequest(0);
+    public long open(long offset) throws IOException {
+        if (offset < 0) {
+            throw new IllegalArgumentException("invalid offset");
+        }
+
+        Request request = createRequest(offset);
 
         Response response = getCallFactory().newCall(request).execute();
         if (!response.isSuccessful()) {
             throw new IOException("connect fail, code is " + response.code());
         }
 
-        String value = response.header("Accept-Ranges", "none");
-        if (value.equals("bytes")) {
-            mIsSupportRangeRequests = true;
-        }
-
-        mContentLength = response.body().contentLength();
-        mReadPosition = 0;
-
         mContentStream = response.body().byteStream();
+
+        return response.body().contentLength();
     }
 
     @Override
-    public long size() {
-        if (!isConnected()) {
-            throw new IllegalStateException("not connect yet");
-        }
-
-        return mContentLength;
+    public int read(byte[] buffer) throws IOException {
+        return read(buffer, 0, buffer.length);
     }
 
     @Override
@@ -89,7 +78,7 @@ public final class SimpleHttpClient implements DataInput {
             throw new IllegalArgumentException("invalid buffer offset");
         }
 
-        if (length < 0 || offset + length > buffer.length) {
+        if (length <= 0 || offset + length > buffer.length) {
             throw new IllegalArgumentException("invalid read length");
         }
 
@@ -97,59 +86,7 @@ public final class SimpleHttpClient implements DataInput {
             throw new IllegalStateException("not connect yet");
         }
 
-        if (length == 0) {
-            return 0;
-        }
-        else {
-            int ret = mContentStream.read(buffer, offset, length);
-            if (ret > 0) {
-                mReadPosition += ret;
-            }
-
-            return ret;
-        }
-    }
-
-    @Override
-    public long offset() {
-        if (!isConnected()) {
-            throw new IllegalStateException("not connect yet");
-        }
-
-        return mReadPosition;
-    }
-
-    @Override
-    public void seek(long position) throws IOException {
-        if (!isConnected()) {
-            throw new IllegalStateException("not connect yet");
-        }
-
-        if (!mIsSupportRangeRequests) {
-            throw new IllegalStateException("not support range requests");
-        }
-
-        if (position < 0 || position >= mContentLength) {
-            throw new IllegalArgumentException("invalid position");
-        }
-
-        try {
-            mContentStream.close();
-        }
-        catch (IOException e) {
-            //ignore
-        }
-
-        Request request = createRequest(position);
-
-        Response response = getCallFactory().newCall(request).execute();
-        if (!response.isSuccessful()) {
-            throw new IOException("connect fail, code is " + response.code());
-        }
-
-        mReadPosition = position;
-
-        mContentStream = response.body().byteStream();
+        return mContentStream.read(buffer, offset, length);
     }
 
     @Override

@@ -15,26 +15,23 @@ public final class FileInput implements DataInput {
     }
 
     @Override
-    public void open() throws IOException {
+    public long open(long offset) throws IOException {
         mFile = new RandomAccessFile(mPath, "r");
+
+        if (offset < 0 || offset >= mFile.length()) {
+            throw new IllegalArgumentException("invalid offset");
+        }
+
+        if (offset > 0) {
+            mFile.seek(offset);
+        }
+
+        return mFile.length() - offset;
     }
 
     @Override
-    public long size() {
-        long fileSize = -1;
-
-        if (!isOpen()) {
-            throw new IllegalStateException("not open yet");
-        }
-
-        try {
-            fileSize = mFile.length();
-        }
-        catch (IOException e) {
-            //ignore
-        }
-
-        return fileSize;
+    public int read(byte[] buffer) throws IOException {
+        return read(buffer, 0, buffer.length);
     }
 
     @Override
@@ -43,7 +40,7 @@ public final class FileInput implements DataInput {
             throw new IllegalArgumentException("invalid buffer offset");
         }
 
-        if (length < 0 || offset + length > buffer.length) {
+        if (length <= 0 || offset + length > buffer.length) {
             throw new IllegalArgumentException("invalid read length");
         }
 
@@ -51,45 +48,7 @@ public final class FileInput implements DataInput {
             throw new IllegalStateException("not open yet");
         }
 
-        if (length == 0) {
-            return 0;
-        }
-        else {
-            return mFile.read(buffer, offset, length);
-        }
-    }
-
-    @Override
-    public long offset() {
-        long position = -1;
-
-        if (!isOpen()) {
-            throw new IllegalStateException("not open yet");
-        }
-
-        try {
-            position = mFile.getFilePointer();
-        }
-        catch (IOException e) {
-            //ignore
-        }
-
-        return position;
-    }
-
-    @Override
-    public void seek(long position) throws IOException {
-        if (position < 0 || position >= size()) {
-            throw new IllegalArgumentException("invalid file position");
-        }
-
-        if (!isOpen()) {
-            throw new IllegalStateException("not open yet");
-        }
-
-        if (position != offset()) {
-            mFile.seek(position);
-        }
+        return mFile.read(buffer, offset, length);
     }
 
     @Override

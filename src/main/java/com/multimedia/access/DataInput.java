@@ -6,27 +6,17 @@ public interface DataInput {
     /**
      * open
      */
-    void open() throws IOException;
+    long open(long offset) throws IOException;
 
     /**
-     * get total size
+     * read data
      */
-    long size();
+    int read(byte[] buffer) throws IOException;
 
     /**
      * read data
      */
     int read(byte[] buffer, int offset, int length) throws IOException;
-
-    /**
-     * get read position
-     */
-    long offset();
-
-    /**
-     * seek to target position
-     */
-    void seek(long position) throws IOException;
 
     /**
      * close
