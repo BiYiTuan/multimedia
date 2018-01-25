@@ -30,7 +30,7 @@ public final class MessageBus extends Thread {
     }
 
     /**
-     * register message handler
+     * register a message handler
      */
     public void registerHandler(Handler handler) {
         mHandlerList.add(handler);
@@ -66,6 +66,15 @@ public final class MessageBus extends Thread {
                 catch (InterruptedException e) {
                     //ignore
                     elapsedTime = msg.when - System.currentTimeMillis();
+                }
+            }
+
+            for (Handler handler : mHandlerList) {
+                if (handler.handleMessage(msg)) {
+                    /**
+                     * message handled
+                     */
+                    break;
                 }
             }
         }
