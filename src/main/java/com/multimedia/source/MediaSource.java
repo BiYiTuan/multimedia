@@ -4,24 +4,19 @@ import com.multimedia.metadata.MetaData;
 
 public interface MediaSource {
     /**
-     * set data source
+     * listener for load
      */
-    void setDataSource(DataSource source);
-
-    /**
-     * listener for source prepare.
-     */
-    interface OnPreparedListener {
+    interface OnLoadCompletedListener {
         /**
-         * called when source has been prepared
+         * called when media has been loaded
          */
-        void onPrepared(MediaSource source);
+        void onLoadCompleted(MediaSource source);
     }
 
     /**
-     * start to prepare
+     * start loading
      */
-    void prepare(OnPreparedListener listener);
+    void load(OnLoadCompletedListener listener);
 
     /**
      * get format
@@ -39,7 +34,7 @@ public interface MediaSource {
     MediaGroup[] getGroups();
 
     /**
-     * select group in source
+     * select group in media
      */
     void selectGroup(int groupId);
 
@@ -54,7 +49,7 @@ public interface MediaSource {
     void release();
 
     /**
-     * listener for source seek.
+     * listener for seek
      */
     interface OnSeekCompletedListener {
         /**

@@ -3,16 +3,16 @@ package com.multimedia.source.rtsp;
 import com.multimedia.source.MediaGroup;
 import com.multimedia.source.MediaSource;
 import com.multimedia.metadata.MetaData;
-import com.multimedia.source.DataSource;
+
+import java.net.URI;
 
 public final class RtspSource implements MediaSource {
-    @Override
-    public void setDataSource(DataSource source) {
+    public RtspSource(URI uri) {
 
     }
 
     @Override
-    public void prepare(OnPreparedListener listener) {
+    public void load(OnLoadCompletedListener listener) {
 
     }
 

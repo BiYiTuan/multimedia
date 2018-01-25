@@ -1,16 +1,26 @@
 package com.multimedia.source;
 
+import com.multimedia.access.DataInput;
+import com.multimedia.message.Handler;
+import com.multimedia.message.Message;
+import com.multimedia.message.MessageBus;
+import com.multimedia.message.MessageType;
 import com.multimedia.metadata.MetaData;
 
-public final class ContainerSource implements MediaSource {
-    @Override
-    public void setDataSource(DataSource source) {
+public final class ContainerSource implements MediaSource, Handler {
+    private DataInput mInput;
 
+    public ContainerSource(DataInput input) {
+        mInput = input;
+
+        MessageBus.getInstance().registerHandler(this);
     }
 
     @Override
-    public void prepare(OnPreparedListener listener) {
+    public void load(OnLoadCompletedListener listener) {
+        Message msg = new Message(MessageType.MEDIA_SOURCE_LOAD, listener);
 
+        MessageBus.getInstance().sendMessage(msg);
     }
 
     @Override
@@ -51,5 +61,17 @@ public final class ContainerSource implements MediaSource {
     @Override
     public long getBuffered() {
         return 0;
+    }
+
+    @Override
+    public boolean handleMessage(Message msg) {
+        switch (msg.what) {
+            case MessageType.MEDIA_SOURCE_LOAD: {
+                return true;
+            }
+            default: {
+                return false;
+            }
+        }
     }
 }
