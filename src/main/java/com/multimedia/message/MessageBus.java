@@ -1,11 +1,9 @@
-package com.multimedia.foundation;
+package com.multimedia.message;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public final class MessageBus extends Thread {
-    private static final int IDLE_TIMEOUT = 10;
-
     private static MessageBus sInstance = null;
 
     /**
@@ -19,20 +17,22 @@ public final class MessageBus extends Thread {
         return sInstance;
     }
 
-    private boolean mIsRunning = false;
+    private List<Handler> mHandlerList;
 
     private MessageQueue mMessageQueue;
-    private List<MessageHandler> mHandlerList;
+
+    private boolean mQuitLoop;
 
     private MessageBus() {
+        mHandlerList = new ArrayList<Handler>();
+
         mMessageQueue = new MessageQueue();
-        mHandlerList = new ArrayList<MessageHandler>();
     }
 
     /**
      * register message handler
      */
-    public void registerHandler(MessageHandler handler) {
+    public void registerHandler(Handler handler) {
         mHandlerList.add(handler);
     }
 
@@ -45,64 +45,80 @@ public final class MessageBus extends Thread {
 
     @Override
     public void run() {
-        mIsRunning = true;
-
         while (true) {
-            Message msg = mMessageQueue.dequeue();
+            Message msg = next();
             if (msg == null) {
                 /**
-                 * no more messages
+                 * no more message, exit
                  */
-                if (!mIsRunning) {
-                    /**
-                     * exit loop
-                     */
-                    break;
-                }
+                break;
+            }
 
+            long elapsedTime = msg.when - System.currentTimeMillis();
+
+            while (elapsedTime > 0) {
                 /**
-                 * idle, try later
+                 * not reach the time
                  */
                 try {
-                    sleep(IDLE_TIMEOUT);
+                    sleep(elapsedTime);
                 }
                 catch (InterruptedException e) {
                     //ignore
-                }
-            }
-            else {
-                long elapsedTime = msg.when - System.currentTimeMillis();
-
-                while (elapsedTime > 0) {
-                    /**
-                     * not reach the time
-                     */
-                    try {
-                        sleep(elapsedTime);
-                    }
-                    catch (InterruptedException e) {
-                        //ignore
-                        elapsedTime = msg.when - System.currentTimeMillis();
-                    }
-                }
-
-                /**
-                 * traverse all handlers to handle this message
-                 */
-                for (MessageHandler handler : mHandlerList) {
-                    if (handler.handleMessage(msg)) {
-                        break;
-                    }
+                    elapsedTime = msg.when - System.currentTimeMillis();
                 }
             }
         }
+    }
+
+    private Message next() {
+        Message msg;
+
+        synchronized (this) {
+            if (!mQuitLoop && mMessageQueue.isEmpty()) {
+                /**
+                 * idle, wait messages
+                 */
+                boolean isNotify = false;
+                do {
+                    try {
+                        wait();
+                        isNotify = true;
+                    }
+                    catch (InterruptedException e) {
+                        //ignore
+                    }
+                }
+                while (!isNotify);
+            }
+            else if (mQuitLoop && !mMessageQueue.isEmpty()) {
+                /**
+                 * discard messages in queue when quitting
+                 */
+                do {
+                    mMessageQueue.dequeue();
+                }
+                while (!mMessageQueue.isEmpty());
+            }
+
+            msg = mMessageQueue.dequeue();
+        }
+
+        return msg;
     }
 
     /**
      * quit thread loop
      */
     public void quit() {
-        mIsRunning = false;
+        synchronized (this) {
+            mQuitLoop = true;
+
+            /**
+             * notify if waiting messages
+             */
+            notify();
+        }
 
         boolean isJoined = false;
         do {
@@ -132,12 +148,22 @@ public final class MessageBus extends Thread {
             throw new IllegalArgumentException("invalid delay");
         }
 
-        if (!mIsRunning) {
-            throw new IllegalStateException("not running");
-        }
-
         msg.when = System.currentTimeMillis() + delay;
 
-        mMessageQueue.enqueue(msg);
+        synchronized (this) {
+            if (!mQuitLoop) {
+                /**
+                 * can not send messages when quitting
+                 */
+            }
+            else {
+                mMessageQueue.enqueue(msg);
+
+                /**
+                 * notify if waiting messages
+                 */
+                notify();
+            }
+        }
     }
 }

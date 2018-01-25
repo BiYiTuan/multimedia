@@ -1,6 +1,6 @@
-package com.multimedia.foundation;
+package com.multimedia.message;
 
-public interface MessageHandler {
+public interface Handler {
     /**
      * handle message
      */

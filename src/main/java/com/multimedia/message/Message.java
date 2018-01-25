@@ -1,4 +1,4 @@
-package com.multimedia.foundation;
+package com.multimedia.message;
 
 public class Message {
     public int what;

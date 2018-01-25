@@ -1,4 +1,4 @@
-package com.multimedia.foundation;
+package com.multimedia.message;
 
 class MessageQueue {
     private Message mHead;
